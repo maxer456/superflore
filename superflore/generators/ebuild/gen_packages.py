@@ -119,6 +119,13 @@ def regenerate_pkg(overlay, pkg, distro, preserve_existing=False):
         raise e
     return current, previous_version, pkg
 
+def _gen_condition_context(distro):
+    context = dict()
+    context["ROS_OS_OVERRIDE"] = "gentoo"
+    context["ROS_DISTRO"] = distro
+    context["ROS_VERSION"] = '2' if get_distros()[distro.name]['distribution_type'] == 'ros2' else '1'
+    context["ROS_PYTHON_VERSION"] = '3'
+    return context
 
 def _gen_metadata_for_package(
     distro, pkg_name, pkg, repo, ros_pkg, pkg_rosinstall
@@ -129,7 +136,7 @@ def _gen_metadata_for_package(
     except Exception:
         warn("fetch metadata for package {}".format(pkg_name))
         return pkg_metadata_xml
-    pkg = PackageMetadata(pkg_xml)
+    pkg = PackageMetadata(pkg_xml, _gen_condition_context(distro))
     pkg_metadata_xml.upstream_email = pkg.upstream_email
     pkg_metadata_xml.upstream_name = pkg.upstream_name
     pkg_metadata_xml.longdescription = pkg.longdescription
